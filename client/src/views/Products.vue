@@ -14,16 +14,22 @@
           <div class="product-info">
             <h3 class="product-name">{{ product.name }}</h3>
             <p class="product-desc">{{ product.description || '暂无描述' }}</p>
-            <div class="product-footer">
+            <div class="product-meta">
               <span class="product-points">{{ product.points }} 积分</span>
+              <span class="product-stock" :class="{ 'out-of-stock': product.stock === 0 }">
+                库存: {{ product.stock }}
+              </span>
+            </div>
+            <div class="product-footer">
               <el-button
                 type="primary"
                 size="small"
                 :icon="ShoppingCart"
                 @click="addToCart(product)"
                 :loading="addingId === product._id"
+                :disabled="product.stock === 0"
               >
-                加入购物车
+                {{ product.stock === 0 ? '暂无库存' : '加入购物车' }}
               </el-button>
             </div>
           </div>
@@ -111,15 +117,30 @@ onMounted(fetchProducts)
   white-space: nowrap;
 }
 
-.product-footer {
+.product-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 12px;
+}
+
+.product-footer {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .product-points {
   color: #f56c6c;
   font-size: 18px;
   font-weight: bold;
+}
+
+.product-stock {
+  font-size: 13px;
+  color: #67c23a;
+}
+
+.product-stock.out-of-stock {
+  color: #909399;
 }
 </style>

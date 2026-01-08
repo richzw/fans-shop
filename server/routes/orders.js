@@ -99,6 +99,15 @@ router.post('/', protect, async (req, res) => {
       });
     }
 
+    // 检查库存是否足够
+    for (const item of validItems) {
+      if (item.productId.stock < item.quantity) {
+        return res.status(400).json({
+          message: `商品 "${item.productId.name}" 库存不足，当前库存 ${item.productId.stock}`
+        });
+      }
+    }
+
     // 创建订单
     const order = await Order.create({
       userId: user._id,
@@ -113,6 +122,13 @@ router.post('/', protect, async (req, res) => {
     // 扣除积分
     user.points -= totalPoints;
     await user.save();
+
+    // 扣减库存
+    for (const item of validItems) {
+      await Product.findByIdAndUpdate(item.productId._id, {
+        $inc: { stock: -item.quantity }
+      });
+    }
 
     // 清空购物车
     cart.items = [];
