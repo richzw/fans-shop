@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: fans-shop-mongodb
+    restart: unless-stopped
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - fans-shop-network
+
+  server:
+    build: ./server
+    container_name: fans-shop-server
+    restart: unless-stopped
+    environment:
+      - PORT=3000
+      - MONGODB_URI=mongodb://mongodb:27017/fans-shop
+      - JWT_SECRET=${JWT_SECRET:-fans-shop-jwt-secret-key-2024}
+      - SMTP_HOST=${SMTP_HOST:-smtp.example.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@example.com}
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      - mongodb
+    networks:
+      - fans-shop-network
+
+  client:
+    build: ./client
+    container_name: fans-shop-client
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    networks:
+      - fans-shop-network
+
+volumes:
+  mongodb_data:
+  uploads_data:
+
+networks:
+  fans-shop-network:
+    driver: bridge
