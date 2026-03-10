@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '../router'
+import i18n from '../i18n'
 
 const api = axios.create({
   baseURL: '/api',
@@ -27,7 +28,7 @@ api.interceptors.response.use(
     return response.data
   },
   (error) => {
-    const message = error.response?.data?.message || '请求失败'
+    const message = error.response?.data?.message || i18n.global.t('api.requestFailed')
     ElMessage.error(message)
 
     if (error.response?.status === 401) {

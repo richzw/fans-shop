@@ -13,11 +13,11 @@
           <img :src="product.image" class="product-image" :alt="product.name" />
           <div class="product-info">
             <h3 class="product-name">{{ product.name }}</h3>
-            <p class="product-desc">{{ product.description || '暂无描述' }}</p>
+            <p class="product-desc">{{ product.description || t('products.noDescription') }}</p>
             <div class="product-meta">
-              <span class="product-points">{{ product.points }} 积分</span>
+              <span class="product-points">{{ t('products.pointsUnit', { n: product.points }) }}</span>
               <span class="product-stock" :class="{ 'out-of-stock': product.stock === 0 }">
-                库存: {{ product.stock }}
+                {{ t('products.stock', { n: product.stock }) }}
               </span>
             </div>
             <div class="product-footer">
@@ -29,14 +29,14 @@
                 :loading="addingId === product._id"
                 :disabled="product.stock === 0"
               >
-                {{ product.stock === 0 ? '暂无库存' : '加入购物车' }}
+                {{ product.stock === 0 ? t('products.outOfStock') : t('products.addToCart') }}
               </el-button>
             </div>
           </div>
         </el-card>
       </el-col>
     </el-row>
-    <el-empty v-if="!loading && products.length === 0" description="暂无商品" />
+    <el-empty v-if="!loading && products.length === 0" :description="t('products.noProducts')" />
   </div>
 </template>
 
@@ -44,10 +44,12 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { ShoppingCart } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
 import { productApi } from '../api'
 import { useCartStore } from '../stores/cart'
 
 const cartStore = useCartStore()
+const { t } = useI18n()
 
 const products = ref([])
 const loading = ref(true)
@@ -66,7 +68,7 @@ const addToCart = async (product) => {
   addingId.value = product._id
   try {
     await cartStore.addItem(product._id)
-    ElMessage.success('已添加到购物车')
+    ElMessage.success(t('products.addedToCart'))
   } finally {
     addingId.value = null
   }

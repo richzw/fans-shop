@@ -1,13 +1,13 @@
 <template>
   <div class="admin-container">
     <el-tabs v-model="activeTab" type="border-card">
-      <el-tab-pane label="商品管理" name="products">
+      <el-tab-pane :label="$t('admin.productManage')" name="products">
         <router-view v-if="activeTab === 'products'" />
       </el-tab-pane>
-      <el-tab-pane label="用户管理" name="users">
+      <el-tab-pane :label="$t('admin.userManage')" name="users">
         <router-view v-if="activeTab === 'users'" />
       </el-tab-pane>
-      <el-tab-pane label="订单管理" name="orders">
+      <el-tab-pane :label="$t('admin.orderManage')" name="orders">
         <router-view v-if="activeTab === 'orders'" />
       </el-tab-pane>
     </el-tabs>

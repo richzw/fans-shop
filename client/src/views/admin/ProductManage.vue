@@ -2,12 +2,12 @@
   <div class="product-manage">
     <div class="toolbar">
       <el-button type="primary" :icon="Plus" @click="showAddDialog">
-        添加商品
+        {{ t('admin.addProduct') }}
       </el-button>
     </div>
 
     <el-table :data="products" v-loading="loading" stripe>
-      <el-table-column label="图片" width="100">
+      <el-table-column :label="t('admin.image')" width="100">
         <template #default="{ row }">
           <el-image
             :src="row.image"
@@ -17,21 +17,21 @@
           />
         </template>
       </el-table-column>
-      <el-table-column prop="name" label="商品名称" min-width="150" />
-      <el-table-column prop="points" label="积分价格" width="120" align="center">
+      <el-table-column prop="name" :label="t('admin.productName')" min-width="150" />
+      <el-table-column prop="points" :label="t('admin.pointsPrice')" width="120" align="center">
         <template #default="{ row }">
           <el-tag type="danger">{{ row.points }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="stock" label="库存" width="100" align="center" />
-      <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
-      <el-table-column label="操作" width="180" align="center">
+      <el-table-column prop="stock" :label="t('admin.stock')" width="100" align="center" />
+      <el-table-column prop="description" :label="t('admin.description')" min-width="200" show-overflow-tooltip />
+      <el-table-column :label="t('admin.action')" width="180" align="center">
         <template #default="{ row }">
           <el-button type="primary" size="small" @click="showEditDialog(row)">
-            编辑
+            {{ t('common.edit') }}
           </el-button>
           <el-button type="danger" size="small" @click="handleDelete(row)">
-            删除
+            {{ t('common.delete') }}
           </el-button>
         </template>
       </el-table-column>
@@ -39,7 +39,7 @@
 
     <el-dialog
       v-model="dialogVisible"
-      :title="isEdit ? '编辑商品' : '添加商品'"
+      :title="isEdit ? t('admin.editProduct') : t('admin.addProduct')"
       width="500"
     >
       <el-form
@@ -48,19 +48,19 @@
         :rules="rules"
         label-width="100px"
       >
-        <el-form-item label="商品名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入商品名称" />
+        <el-form-item :label="t('admin.productName')" prop="name">
+          <el-input v-model="form.name" :placeholder="t('admin.productNamePlaceholder')" />
         </el-form-item>
-        <el-form-item label="积分价格" prop="points">
+        <el-form-item :label="t('admin.pointsPrice')" prop="points">
           <el-input-number v-model="form.points" :min="1" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="库存数量" prop="stock">
+        <el-form-item :label="t('admin.stockQuantity')" prop="stock">
           <el-input-number v-model="form.stock" :min="0" style="width: 100%" />
         </el-form-item>
-        <el-form-item label="商品描述">
+        <el-form-item :label="t('admin.productDescription')">
           <el-input v-model="form.description" type="textarea" :rows="3" />
         </el-form-item>
-        <el-form-item label="商品图片" prop="image">
+        <el-form-item :label="t('admin.productImage')" prop="image">
           <el-upload
             class="image-uploader"
             :auto-upload="false"
@@ -71,13 +71,13 @@
             <img v-if="imagePreview" :src="imagePreview" class="preview-image" />
             <el-icon v-else class="uploader-icon"><Plus /></el-icon>
           </el-upload>
-          <div class="upload-tip">点击上传图片，支持 jpg/png/gif/webp</div>
+          <div class="upload-tip">{{ t('admin.uploadTip') }}</div>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
         <el-button type="primary" @click="handleSubmit" :loading="submitting">
-          确定
+          {{ t('common.confirm') }}
         </el-button>
       </template>
     </el-dialog>
@@ -85,10 +85,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
 import { productApi } from '../../api'
+
+const { t } = useI18n()
 
 const products = ref([])
 const loading = ref(false)
@@ -107,10 +110,10 @@ const form = reactive({
   description: ''
 })
 
-const rules = {
-  name: [{ required: true, message: '请输入商品名称', trigger: 'blur' }],
-  points: [{ required: true, message: '请输入积分价格', trigger: 'blur' }]
-}
+const rules = computed(() => ({
+  name: [{ required: true, message: t('admin.productNameRequired'), trigger: 'blur' }],
+  points: [{ required: true, message: t('admin.pointsPriceRequired'), trigger: 'blur' }]
+}))
 
 const fetchProducts = async () => {
   loading.value = true
@@ -159,7 +162,7 @@ const handleSubmit = async () => {
   if (!valid) return
 
   if (!isEdit.value && !imageFile.value) {
-    ElMessage.warning('请上传商品图片')
+    ElMessage.warning(t('admin.pleaseUploadImage'))
     return
   }
 
@@ -176,10 +179,10 @@ const handleSubmit = async () => {
   try {
     if (isEdit.value) {
       await productApi.update(editingId.value, formData)
-      ElMessage.success('商品已更新')
+      ElMessage.success(t('admin.productUpdated'))
     } else {
       await productApi.create(formData)
-      ElMessage.success('商品已添加')
+      ElMessage.success(t('admin.productAdded'))
     }
     dialogVisible.value = false
     fetchProducts()
@@ -191,15 +194,15 @@ const handleSubmit = async () => {
 const handleDelete = async (product) => {
   try {
     await ElMessageBox.confirm(
-      `确定删除商品 "${product.name}" 吗？`,
-      '删除确认',
-      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
+      t('admin.confirmDeleteProduct', { name: product.name }),
+      t('common.deleteConfirm'),
+      { confirmButtonText: t('common.confirm'), cancelButtonText: t('common.cancel'), type: 'warning' }
     )
     await productApi.delete(product._id)
-    ElMessage.success('商品已删除')
+    ElMessage.success(t('admin.productDeleted'))
     fetchProducts()
   } catch (error) {
-    // 取消删除
+    // cancelled
   }
 }
 

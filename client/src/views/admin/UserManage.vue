@@ -2,46 +2,45 @@
   <div class="user-manage">
     <div class="toolbar">
       <el-button type="primary" :icon="Plus" @click="showAddDialog">
-        添加用户
+        {{ t('admin.addUser') }}
       </el-button>
     </div>
 
     <el-table :data="users" v-loading="loading" stripe>
-      <el-table-column prop="username" label="用户名" width="150" />
-      <el-table-column prop="points" label="积分" width="120" align="center">
+      <el-table-column prop="username" :label="t('admin.username')" width="150" />
+      <el-table-column prop="points" :label="t('admin.points')" width="120" align="center">
         <template #default="{ row }">
           <el-tag type="warning">{{ row.points }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="收件人" prop="recipient" min-width="120" />
-      <el-table-column label="手机号" prop="phone" width="130" />
-      <el-table-column label="收件地址" prop="address" min-width="200" show-overflow-tooltip />
-      <el-table-column label="首次登录" width="100" align="center">
+      <el-table-column :label="t('admin.recipientCol')" prop="recipient" min-width="120" />
+      <el-table-column :label="t('admin.phoneCol')" prop="phone" width="130" />
+      <el-table-column :label="t('admin.addressCol')" prop="address" min-width="200" show-overflow-tooltip />
+      <el-table-column :label="t('admin.firstLogin')" width="100" align="center">
         <template #default="{ row }">
           <el-tag :type="row.isFirstLogin ? 'warning' : 'success'" size="small">
-            {{ row.isFirstLogin ? '是' : '否' }}
+            {{ row.isFirstLogin ? t('common.yes') : t('common.no') }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="240" align="center">
+      <el-table-column :label="t('admin.action')" width="240" align="center">
         <template #default="{ row }">
           <el-button type="primary" size="small" @click="showEditDialog(row)">
-            编辑
+            {{ t('common.edit') }}
           </el-button>
           <el-button type="warning" size="small" @click="showPointsDialog(row)">
-            设置积分
+            {{ t('admin.setPoints') }}
           </el-button>
           <el-button type="danger" size="small" @click="handleDelete(row)">
-            删除
+            {{ t('common.delete') }}
           </el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <!-- 添加/编辑用户对话框 -->
     <el-dialog
       v-model="dialogVisible"
-      :title="isEdit ? '编辑用户' : '添加用户'"
+      :title="isEdit ? t('admin.editUser') : t('admin.addUser')"
       width="400"
     >
       <el-form
@@ -50,46 +49,45 @@
         :rules="rules"
         label-width="100px"
       >
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="form.username" :disabled="isEdit" placeholder="请输入用户名" />
+        <el-form-item :label="t('admin.username')" prop="username">
+          <el-input v-model="form.username" :disabled="isEdit" :placeholder="t('admin.usernamePlaceholder')" />
         </el-form-item>
-        <el-form-item label="密码" :prop="isEdit ? '' : 'password'">
+        <el-form-item :label="t('admin.password')" :prop="isEdit ? '' : 'password'">
           <el-input
             v-model="form.password"
             type="password"
             show-password
-            :placeholder="isEdit ? '留空则不修改密码' : '请输入初始密码'"
+            :placeholder="isEdit ? t('admin.passwordPlaceholderEdit') : t('admin.passwordPlaceholderAdd')"
           />
         </el-form-item>
-        <el-form-item label="初始积分" prop="points">
+        <el-form-item :label="t('admin.initialPoints')" prop="points">
           <el-input-number v-model="form.points" :min="0" style="width: 100%" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button @click="dialogVisible = false">{{ t('common.cancel') }}</el-button>
         <el-button type="primary" @click="handleSubmit" :loading="submitting">
-          确定
+          {{ t('common.confirm') }}
         </el-button>
       </template>
     </el-dialog>
 
-    <!-- 设置积分对话框 -->
-    <el-dialog v-model="pointsDialogVisible" title="设置积分" width="400">
+    <el-dialog v-model="pointsDialogVisible" :title="t('admin.setPoints')" width="400">
       <el-form label-width="100px">
-        <el-form-item label="用户名">
+        <el-form-item :label="t('admin.username')">
           <el-input :model-value="selectedUser?.username" disabled />
         </el-form-item>
-        <el-form-item label="当前积分">
+        <el-form-item :label="t('admin.currentPoints')">
           <el-tag type="info">{{ selectedUser?.points }}</el-tag>
         </el-form-item>
-        <el-form-item label="新积分">
+        <el-form-item :label="t('admin.newPoints')">
           <el-input-number v-model="newPoints" :min="0" style="width: 100%" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="pointsDialogVisible = false">取消</el-button>
+        <el-button @click="pointsDialogVisible = false">{{ t('common.cancel') }}</el-button>
         <el-button type="primary" @click="handleUpdatePoints" :loading="updatingPoints">
-          确定
+          {{ t('common.confirm') }}
         </el-button>
       </template>
     </el-dialog>
@@ -97,10 +95,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
 import { userApi } from '../../api'
+
+const { t } = useI18n()
 
 const users = ref([])
 const loading = ref(false)
@@ -121,10 +122,10 @@ const form = reactive({
   points: 0
 })
 
-const rules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
-}
+const rules = computed(() => ({
+  username: [{ required: true, message: t('admin.usernameRequired'), trigger: 'blur' }],
+  password: [{ required: true, message: t('admin.passwordRequired'), trigger: 'blur' }]
+}))
 
 const fetchUsers = async () => {
   loading.value = true
@@ -175,14 +176,14 @@ const handleSubmit = async () => {
         data.password = form.password
       }
       await userApi.update(editingId.value, data)
-      ElMessage.success('用户已更新')
+      ElMessage.success(t('admin.userUpdated'))
     } else {
       await userApi.create({
         username: form.username,
         password: form.password,
         points: form.points
       })
-      ElMessage.success('用户已创建')
+      ElMessage.success(t('admin.userCreated'))
     }
     dialogVisible.value = false
     fetchUsers()
@@ -197,7 +198,7 @@ const handleUpdatePoints = async () => {
   updatingPoints.value = true
   try {
     await userApi.update(selectedUser.value._id, { points: newPoints.value })
-    ElMessage.success('积分已更新')
+    ElMessage.success(t('admin.pointsUpdated'))
     pointsDialogVisible.value = false
     fetchUsers()
   } finally {
@@ -208,15 +209,15 @@ const handleUpdatePoints = async () => {
 const handleDelete = async (user) => {
   try {
     await ElMessageBox.confirm(
-      `确定删除用户 "${user.username}" 吗？`,
-      '删除确认',
-      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
+      t('admin.confirmDeleteUser', { name: user.username }),
+      t('common.deleteConfirm'),
+      { confirmButtonText: t('common.confirm'), cancelButtonText: t('common.cancel'), type: 'warning' }
     )
     await userApi.delete(user._id)
-    ElMessage.success('用户已删除')
+    ElMessage.success(t('admin.userDeleted'))
     fetchUsers()
   } catch (error) {
-    // 取消删除
+    // cancelled
   }
 }
 
