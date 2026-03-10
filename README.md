@@ -209,14 +209,6 @@ docker-compose up -d --build
 | server | fans-shop-server | 3000 (内部) | 后端 API |
 | mongodb | fans-shop-mongodb | 27017 (内部) | 数据库 |
 
-## 默认账户
-
-| 角色 | 用户名 | 密码 |
-|------|--------|------|
-| 管理员 | admin | admin123 |
-
-> 首次登录后建议修改密码
-
 ## API 接口
 
 ### 认证
